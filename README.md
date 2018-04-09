@@ -1,7 +1,7 @@
 tags.py
 =======
 
-Latest version = 0.7.3
+Latest version = 0.7.4
 
 This python script will create a sqlite database of local music and allow very simple queries.
 
@@ -17,7 +17,7 @@ Examples
 ```
 $ ./tags.py 
 
-./tags.py , version  0.7.3
+./tags.py , version  0.7.4
 --------------------
 database path:  /home/archerja/projects/tags.py/id3.db3
    music path:  /media/archerja/Stuff/backup/Music

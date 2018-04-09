@@ -12,7 +12,7 @@ from mutagen.mp3 import MP3
 #dsn = '/home/archerja/Music/id3.db3'
 dsn = os.path.join(os.getcwd(),'id3.db3')
 basedir = '/media/archerja/Stuff/backup/Music'
-version = '0.7.3'
+version = '0.7.4'
 
 class ID3:
     def __init__(self,path):
@@ -142,7 +142,7 @@ class Script:
         q = 'SELECT * from id3 WHERE artist LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
         cursor.execute(q)
         for line in cursor:
-            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["album"], "*", line["title"]
+            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["title"]
 	print ''
 
     def searchalbum(self,query):
@@ -152,7 +152,7 @@ class Script:
         q = 'SELECT * from id3 WHERE album LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
         cursor.execute(q)
         for line in cursor:
-            print line["bitrate"], "*", line["album"], "*", line["year"], "*", line["artist"], "*", line["title"]
+            print line["bitrate"], "*", line["album"], "*", line["year"], "*", line["comment"], "*", line["artist"], "*", line["title"]
 	print ''
 
     def searchtitle(self,query):
@@ -162,7 +162,7 @@ class Script:
         q = 'SELECT * from id3 WHERE title LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
         cursor.execute(q)
         for line in cursor:
-            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["album"], "*", line["title"]
+            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["title"]
 	print ''
 
     def searchgenre(self,query):
@@ -179,13 +179,6 @@ class Script:
 	MYinfo()
         cnx = self.db()
         cursor = cnx.cursor()
-#        if "below320" in query:
-#          q = 'select bitrate, artist||" - "||album as aa from id3 where bitrate < 320 group by artist||" - "||album order by location'
-#          q = 'select bitrate,artist,album from id3 where bitrate < 320 group by album order by location'
-#          cursor.execute(q)
-#          for line in cursor:
-#              print line["bitrate"], line["artist"],' * ', line["album"]
-#        elif "genre" in query:
         if "genre" in query:
           q = 'select genre ,count(*) as total from id3 group by genre order by genre'
           cursor.execute(q)
@@ -228,17 +221,7 @@ class Script:
         q = 'SELECT * from id3 WHERE substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) LIKE ' + '"' + query + '%"' + ' and bitrate < 320 ORDER BY location'
         cursor.execute(q)
         for line in cursor:
-            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["album"], "*", line["title"]
-
-#    def path320(self,query):
-#	MYinfo()
-#        cnx = self.db()
-#        cursor = cnx.cursor()
-#        locsplit = query.split(basedir)[1]
-#        q = 'SELECT * from id3 WHERE location LIKE ' + '"' + locsplit + '%"' + ' and bitrate < 320 ORDER BY location'
-#        cursor.execute(q)
-#        for line in cursor:
-#            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["album"], "*", line["title"]
+            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["title"]
 
     def db(self):
         if getattr(self,"database", None) == None:
@@ -265,9 +248,6 @@ if __name__ == '__main__':
 	print '                    update      [music path to update]'
 	print '                                (updates the database)'
 	print ''
-#	print '                    not320      [music path to search]'
-#	print '                                (checks database for records below 320 bitrate)'
-#	print ''
 	print '       Database Searches:'
 	print '                    artist      "string" (using "like")'
 	print '                    album       "string" (using "like")'
@@ -281,7 +261,6 @@ if __name__ == '__main__':
 	print '                    summary     bitrate'
 	print '                    summary     group'
 	print '                    summary     artist'
-#	print '                    summary     below320'
 	print ''
     else:
         script = Script()
@@ -303,3 +282,4 @@ if __name__ == '__main__':
             script.searchgenre(sys.argv[2])
         elif sys.argv[1] == 'below320':
             script.below320(sys.argv[2])
+
