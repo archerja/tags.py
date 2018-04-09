@@ -12,7 +12,7 @@ from mutagen.mp3 import MP3
 #dsn = '/home/archerja/Music/id3.db3'
 dsn = os.path.join(os.getcwd(),'id3.db3')
 basedir = '/media/archerja/Stuff/backup/Music'
-version = '0.7.4'
+version = '0.7.5'
 
 class ID3:
     def __init__(self,path):
@@ -142,7 +142,7 @@ class Script:
         q = 'SELECT * from id3 WHERE artist LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
         cursor.execute(q)
         for line in cursor:
-            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["title"]
+            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["track"], "*", line["title"]
 	print ''
 
     def searchalbum(self,query):
@@ -152,17 +152,19 @@ class Script:
         q = 'SELECT * from id3 WHERE album LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
         cursor.execute(q)
         for line in cursor:
-            print line["bitrate"], "*", line["album"], "*", line["year"], "*", line["comment"], "*", line["artist"], "*", line["title"]
+            print line["bitrate"], "*", line["album"], "*", line["year"], "*", line["comment"], "*", line["track"], "*", line["artist"], "*", line["title"]
 	print ''
 
     def searchtitle(self,query):
 	MYinfo()
         cnx = self.db()
         cursor = cnx.cursor()
-        q = 'SELECT * from id3 WHERE title LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
+#        q = 'SELECT * from id3 WHERE title LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
+        q = 'SELECT * from id3 WHERE title LIKE ' + '"%' + query + '%"' + ' ORDER BY artist, album'
         cursor.execute(q)
         for line in cursor:
-            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["title"]
+#            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["title"]
+            print line["bitrate"], "*", line["artist"], "*", line["album"], "*", line["comment"], "*", line["track"], "*", line["title"]
 	print ''
 
     def searchgenre(self,query):
@@ -173,6 +175,16 @@ class Script:
         cursor.execute(q)
         for line in cursor:
             print line["bitrate"], "*", line["genre"], "*", line["artist"], "*", line["year"], "*", line["album"], "*", line["title"]
+	print ''
+
+    def searchbitrate(self,query):
+	MYinfo()
+        cnx = self.db()
+        cursor = cnx.cursor()
+        q = "SELECT substr(substr(location,(instr(location,'/')) + 1),1,(instr(substr(location,(instr(location,'/')) + 1),'/'))-1) as groups,* from id3 WHERE bitrate = " + query + " ORDER BY location"
+        cursor.execute(q)
+        for line in cursor:
+            print line["bitrate"], "*", line["groups"], "*", line["album"], "*", line["year"], "*", line["artist"], "*", line["title"]
 	print ''
 
     def summary(self,query):
@@ -253,6 +265,7 @@ if __name__ == '__main__':
 	print '                    album       "string" (using "like")'
 	print '                    title       "string" (using "like")'
 	print '                    genre       "string" (using "like")'
+	print '                    bitrate     "string" '
 	print '                    below320    "group"'
 	print ''
 	print '       Database Summaries:'
@@ -280,6 +293,7 @@ if __name__ == '__main__':
             script.searchtitle(sys.argv[2])
         elif sys.argv[1] == 'genre':
             script.searchgenre(sys.argv[2])
+        elif sys.argv[1] == 'bitrate':
+            script.searchbitrate(sys.argv[2])
         elif sys.argv[1] == 'below320':
             script.below320(sys.argv[2])
-
