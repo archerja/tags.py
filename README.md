@@ -1,7 +1,7 @@
 tags.py
 =======
 
-Latest version = 0.7.6
+Latest version = 0.7.7
 
 This python script will create a sqlite database of local music and allow very simple queries.
 
@@ -17,7 +17,7 @@ Examples
 ```
 $ ./tags.py 
 
-./tags.py , version  0.7.6
+./tags.py , version  0.7.7
 --------------------
 database path:  /home/archerja/projects/tags.py/id3.db3
    music path:  /media/archerja/Stuff/backup/Music
@@ -38,10 +38,10 @@ Usage:  ./tags.py  {command}   {data}
                     album       "string" (using "like")
                     title       "string" (using "like")
                     genre       "string" (using "like")
-                    discog      "string" (using "like" for artist)
-                    bitrate     "string" (128,256,320)
-                    below320    "group"  (artist,christmas,classical
-                                          ,compilation,lounge,soundtrack)
+                    discog      "string" (using "like", for artist)
+                    list        "group"  (using "like")
+                    below320    "group"  (using "like")
+                    bitrate     "string" (128,256,320,etc.)
 
        Database Summaries:
                     summary     all     (total albums, artists, records)
@@ -49,6 +49,10 @@ Usage:  ./tags.py  {command}   {data}
                     summary     bitrate (total records per bitrate range)
                     summary     group   (total records per group)
                     summary     artist  (total albums per artist)
+
+       Notes:
+                    current "groups"    (artist,christmas,classical
+                                          ,compilation,lounge,soundtrack)
 
 ```
 

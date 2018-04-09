@@ -12,7 +12,7 @@ from mutagen.mp3 import MP3
 #dsn = '/home/archerja/Music/id3.db3'
 dsn = os.path.join(os.getcwd(),'id3.db3')
 basedir = '/media/archerja/Stuff/backup/Music'
-version = '0.7.6'
+version = '0.7.7'
 
 class ID3:
     def __init__(self,path):
@@ -197,6 +197,21 @@ class Script:
             print line["groups"], "*", line["bitrate"], "*", line["year"], "*", line["artist"], "*", line["album"]
 	print ''
 
+    def searchlist(self,query):
+	MYinfo()
+        cnx = self.db()
+        cursor = cnx.cursor()
+#        q = 'SELECT distinct substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) as groups, artist||" * "||album as artalb, artist, album, year, bitrate from id3 WHERE substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) LIKE ' + '"%' + query + '%"' + ' GROUP BY artist||" * "||album ORDER BY location'
+        q = 'SELECT distinct substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) as groups, rtrim(location, replace(location, "/", "")) as paths,artist, album, year, bitrate, location from id3 WHERE substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) LIKE ' + '"%' + query + '%"' + ' GROUP BY paths ORDER BY location'
+        cursor.execute(q)
+#        print 'group, bitrate, year, artist, album'
+        print 'bitrate, directory path'
+	print '-------------------------------------'
+        for line in cursor:
+#            print line["groups"], "*", line["bitrate"], "*", line["year"], "*", line["artist"], "*", line["album"]
+            print line["bitrate"], "*", line["paths"]
+	print ''
+
     def searchbitrate(self,query):
 	MYinfo()
         cnx = self.db()
@@ -291,10 +306,10 @@ if __name__ == '__main__':
 	print '                    album       "string" (using "like")'
 	print '                    title       "string" (using "like")'
 	print '                    genre       "string" (using "like")'
-	print '                    discog      "string" (using "like" for artist)'
-	print '                    bitrate     "string" (128,256,320)'
-	print '                    below320    "group"  (artist,christmas,classical'
-	print '                                          ,compilation,lounge,soundtrack)'
+	print '                    discog      "string" (using "like", for artist)'
+	print '                    list        "group"  (using "like")'
+	print '                    below320    "group"  (using "like")'
+	print '                    bitrate     "string" (128,256,320,etc.)'
 	print ''
 	print '       Database Summaries:'
 	print '                    summary     all     (total albums, artists, records)'
@@ -302,6 +317,10 @@ if __name__ == '__main__':
 	print '                    summary     bitrate (total records per bitrate range)'
 	print '                    summary     group   (total records per group)'
 	print '                    summary     artist  (total albums per artist)'
+	print ''
+	print '       Notes:'
+	print '                    current "groups"    (artist,christmas,classical'
+	print '                                          ,compilation,lounge,soundtrack)'
 	print ''
     else:
         script = Script()
@@ -323,6 +342,8 @@ if __name__ == '__main__':
             script.searchgenre(sys.argv[2])
         elif sys.argv[1] == 'discog':
             script.searchdiscog(sys.argv[2])
+        elif sys.argv[1] == 'list':
+            script.searchlist(sys.argv[2])
         elif sys.argv[1] == 'bitrate':
             script.searchbitrate(sys.argv[2])
         elif sys.argv[1] == 'below320':
