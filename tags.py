@@ -12,7 +12,7 @@ from mutagen.mp3 import MP3
 #dsn = '/home/archerja/Music/id3.db3'
 dsn = os.path.join(os.getcwd(),'id3.db3')
 basedir = '/media/archerja/Stuff/backup/Music'
-version = '0.7.5'
+version = '0.7.6'
 
 class ID3:
     def __init__(self,path):
@@ -141,6 +141,8 @@ class Script:
         cursor = cnx.cursor()
         q = 'SELECT * from id3 WHERE artist LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
         cursor.execute(q)
+        print 'bitrate, artist, year, comment, album, track, title'
+	print '-----------------------------------------------------'
         for line in cursor:
             print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["track"], "*", line["title"]
 	print ''
@@ -151,6 +153,8 @@ class Script:
         cursor = cnx.cursor()
         q = 'SELECT * from id3 WHERE album LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
         cursor.execute(q)
+        print 'bitrate, album, year, comment, track, artist, title'
+	print '-----------------------------------------------------'
         for line in cursor:
             print line["bitrate"], "*", line["album"], "*", line["year"], "*", line["comment"], "*", line["track"], "*", line["artist"], "*", line["title"]
 	print ''
@@ -162,6 +166,8 @@ class Script:
 #        q = 'SELECT * from id3 WHERE title LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
         q = 'SELECT * from id3 WHERE title LIKE ' + '"%' + query + '%"' + ' ORDER BY artist, album'
         cursor.execute(q)
+        print 'bitrate, artist, album, comment, track, title'
+	print '-----------------------------------------------'
         for line in cursor:
 #            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["title"]
             print line["bitrate"], "*", line["artist"], "*", line["album"], "*", line["comment"], "*", line["track"], "*", line["title"]
@@ -173,8 +179,22 @@ class Script:
         cursor = cnx.cursor()
         q = 'SELECT * from id3 WHERE genre LIKE ' + '"%' + query + '%"' + ' ORDER BY location'
         cursor.execute(q)
+        print 'bitrate, genre, artist, year, album, track, title'
+	print '---------------------------------------------------'
         for line in cursor:
-            print line["bitrate"], "*", line["genre"], "*", line["artist"], "*", line["year"], "*", line["album"], "*", line["title"]
+            print line["bitrate"], "*", line["genre"], "*", line["artist"], "*", line["year"], "*", line["album"], "*", line["track"], "*", line["title"]
+	print ''
+
+    def searchdiscog(self,query):
+	MYinfo()
+        cnx = self.db()
+        cursor = cnx.cursor()
+        q = 'SELECT distinct substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) as groups, artist||" * "||album as artalb, artist, album, year, bitrate from id3 WHERE artist LIKE ' + '"%' + query + '%"' + ' GROUP BY artist||" * "||album ORDER BY location'
+        cursor.execute(q)
+        print 'group, bitrate, year, artist, album'
+	print '-------------------------------------'
+        for line in cursor:
+            print line["groups"], "*", line["bitrate"], "*", line["year"], "*", line["artist"], "*", line["album"]
 	print ''
 
     def searchbitrate(self,query):
@@ -183,6 +203,8 @@ class Script:
         cursor = cnx.cursor()
         q = "SELECT substr(substr(location,(instr(location,'/')) + 1),1,(instr(substr(location,(instr(location,'/')) + 1),'/'))-1) as groups,* from id3 WHERE bitrate = " + query + " ORDER BY location"
         cursor.execute(q)
+        print 'bitrate, group, album, year, artist, title'
+	print '--------------------------------------------'
         for line in cursor:
             print line["bitrate"], "*", line["groups"], "*", line["album"], "*", line["year"], "*", line["artist"], "*", line["title"]
 	print ''
@@ -194,29 +216,29 @@ class Script:
         if "genre" in query:
           q = 'select genre ,count(*) as total from id3 group by genre order by genre'
           cursor.execute(q)
-          print 'totals  genre'
-	  print '--------------------'
+          print 'totals, genre'
+	  print '---------------'
           for line in cursor:
               print "{:<7}".format(line["total"]), line["genre"]
         elif "bitrate" in query:
           q = 'SELECT "000-128" as range, count(*) as total FROM id3 where bitrate between 0 and 128 union SELECT "129-192" as range, count(*) as total FROM id3 where bitrate between 129 and 192 union SELECT "193-256" as range, count(*) as total FROM id3 where bitrate between 193 and 256 union SELECT "257-319" as range, count(*) as total FROM id3 where bitrate between 257 and 319 union SELECT "320-999" as range, count(*) as total FROM id3 where bitrate between 320 and 999'
           cursor.execute(q)
-	  print 'range   totals'
-	  print '--------------------'
+	  print 'range, totals'
+	  print '---------------'
           for line in cursor:
               print line["range"], line["total"]
         elif "group" in query:
           q = "SELECT substr(substr(location,(instr(location,'/')) + 1),1,(instr(substr(location,(instr(location,'/')) + 1),'/'))-1) as groups, count(*) as total FROM id3 group by substr(substr(location,(instr(location,'/')) + 1),1,(instr(substr(location,(instr(location,'/')) + 1),'/'))-1) order by substr(substr(location,(instr(location,'/')) + 1),1,(instr(substr(location,(instr(location,'/')) + 1),'/'))-1)"
           cursor.execute(q)
-          print 'groups       total'
-	  print '--------------------'
+          print 'groups, totals'
+	  print '----------------'
           for line in cursor:
               print "{:<12}".format(line["groups"]), line["total"]
         elif "artist" in query:
           q = 'select artist, count(distinct artist||album) as total from id3 where substr(location,1,8) = "/Artist/" group by artist order by artist'
           cursor.execute(q)
-          print 'totals  artist'
-	  print '--------------------'
+          print 'totals, artist'
+	  print '----------------'
           for line in cursor:
               print "{:<4}".format(line["total"]), line["artist"]
 	else:
@@ -230,10 +252,14 @@ class Script:
 	MYinfo()
         cnx = self.db()
         cursor = cnx.cursor()
-        q = 'SELECT * from id3 WHERE substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) LIKE ' + '"' + query + '%"' + ' and bitrate < 320 ORDER BY location'
+#        q = 'SELECT * from id3 WHERE substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) LIKE ' + '"' + query + '%"' + ' and bitrate < 320 ORDER BY location'
+        q = 'SELECT distinct substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) as groups, artist||" * "||album as artalb, year, bitrate from id3 WHERE substr(substr(location,(instr(location,"/")) + 1),1,(instr(substr(location,(instr(location,"/")) + 1),"/"))-1) LIKE ' + '"' + query + '%"' + ' and bitrate < 320 GROUP BY artist||" * "||album, bitrate ORDER BY location'
         cursor.execute(q)
+        print 'group, bitrate, artist, album'
+	print '-------------------------------'
         for line in cursor:
-            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["title"]
+#            print line["bitrate"], "*", line["artist"], "*", line["year"], "*", line["comment"], "*", line["album"], "*", line["title"]
+            print line["groups"], "*", line["bitrate"], "*", line["artalb"]
 
     def db(self):
         if getattr(self,"database", None) == None:
@@ -265,15 +291,17 @@ if __name__ == '__main__':
 	print '                    album       "string" (using "like")'
 	print '                    title       "string" (using "like")'
 	print '                    genre       "string" (using "like")'
-	print '                    bitrate     "string" '
-	print '                    below320    "group"'
+	print '                    discog      "string" (using "like" for artist)'
+	print '                    bitrate     "string" (128,256,320)'
+	print '                    below320    "group"  (artist,christmas,classical'
+	print '                                          ,compilation,lounge,soundtrack)'
 	print ''
 	print '       Database Summaries:'
-	print '                    summary     all'
-	print '                    summary     genre'
-	print '                    summary     bitrate'
-	print '                    summary     group'
-	print '                    summary     artist'
+	print '                    summary     all     (total albums, artists, records)'
+	print '                    summary     genre   (total records per genre)'
+	print '                    summary     bitrate (total records per bitrate range)'
+	print '                    summary     group   (total records per group)'
+	print '                    summary     artist  (total albums per artist)'
 	print ''
     else:
         script = Script()
@@ -293,6 +321,8 @@ if __name__ == '__main__':
             script.searchtitle(sys.argv[2])
         elif sys.argv[1] == 'genre':
             script.searchgenre(sys.argv[2])
+        elif sys.argv[1] == 'discog':
+            script.searchdiscog(sys.argv[2])
         elif sys.argv[1] == 'bitrate':
             script.searchbitrate(sys.argv[2])
         elif sys.argv[1] == 'below320':
