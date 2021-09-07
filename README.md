@@ -1,54 +1,74 @@
-tags.py
-=======
+# tags.py
 
-Latest version = 0.7.7
-
-This python script will create a sqlite database of local music and allow very simple queries.
+This python script will create an sqlite database of local music and allow very simple queries.
 
 It is used mainly on Linux, but should work on other OSes.
 
-**Mutagen is required to read mp3 files**
+## Installation
 
-Mutagen is needed to read local mp3 tag information. After initial database creation, it is not needed.
+This script requires [mutagen](https://github.com/quodlibet/mutagen) to pull the mp3 tags out of your files.
 
-Examples
-=======
+Mutagen is needed to read local mp3 tag information that is inserted into the database.
+
+## Usage example
 
 ```
 $ ./tags.py 
 
-./tags.py , version  0.7.7
+./tags.py , version  0.8.0
 --------------------
 database path:  /home/archerja/projects/tags.py/id3.db3
-   music path:  /media/archerja/Stuff/backup/Music
+   music path:  /home/archerja/Music/music
 --------------------
 
-Usage:  ./tags.py  {command}   {data}
+Usage:  ./tags.py  [ summary | search | update | m3u | db-build ] {argument} {query}
+
+```
+
+## Help
+
+```
+$ ./tags.py --help
+
+./tags.py , version  0.8.0
+--------------------
+database path:  /home/archerja/projects/tags.py/id3.db3
+   music path:  /home/archerja/Music/music
+--------------------
+
+Usage:  ./tags.py  [ summary | search | update | m3u | db-build ] {argument} {query}
+
                     db-build    [your music root path]
                                 (only use first time, will delete all records)
-
-                    test        [music path to update]
-                                (make sure...)
 
                     update      [music path to update]
                                 (updates the database)
 
        Database Searches:
-                    artist      "string" (using "like")
-                    album       "string" (using "like")
-                    title       "string" (using "like")
-                    genre       "string" (using "like")
-                    discog      "string" (using "like", for artist)
-                    list        "group"  (using "like")
-                    below320    "group"  (using "like")
-                    bitrate     "string" (128,256,320,etc.)
+                    search      artist      "string" (using "like")
+                    search      album       "string" (using "like")
+                    search      title       "string" (using "like")
+                    search      genre       "string" (using "like")
+                    search      discog      "string" (using "like", for artist)
+                    search      list        "group"  (using "like")
+                    search      below320    "group"  (using "like")
+                    search      bitrate     "string" (128,256,320,etc.)
 
        Database Summaries:
-                    summary     all     (total albums, artists, records)
-                    summary     genre   (total records per genre)
-                    summary     bitrate (total records per bitrate range)
-                    summary     group   (total records per group)
-                    summary     artist  (total albums per artist)
+                    summary     all         (total albums, artists, records)
+                    summary     artist      (total albums per artist)
+                    summary     genre       (total records per genre)
+                    summary     group       (total records per group)
+                    summary     year        (total records per year)
+                    summary     bitrate     (total records per bitrate range)
+
+       Music list to export to other applications:
+                    m3u         "artist" "album" "title" "year"
+
+           Examples:
+                    ./tags.py m3u "james taylor" "greatest hits" "" "1976" | mpv --playlist=-
+
+                    mpv --playlist <(./tags.py m3u "james taylor" "greatest hits" "" "1976")
 
        Notes:
                     current "groups"    (artist,christmas,classical
@@ -56,15 +76,35 @@ Usage:  ./tags.py  {command}   {data}
 
 ```
 
+## Release History
+
+* 0.8.0
+    * Rewrite and cleanup
+    * Added m3u search
+* 0.7.7
+    * Added list search
+    * More work on help section
+* 0.7.6
+    * Added discog search
+    * Worked on help section
+* 0.7.5
+    * Added bitrate searches
+* 0.7.0
+    * Added several summary queries
+    * Added genre search
+* 0.3.0
+    * The first proper release
+    * Added simple searches
+* 0.0.1
+    * Work in progress
 
 
-Author
-======
+
+## Author
 
 Joseph Archer (C) 2017
 
 
-License
-=======
+## License
 
 The code is covered by the MIT.
