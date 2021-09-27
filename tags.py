@@ -12,7 +12,7 @@ from mutagen.mp3 import MP3
 dsn = os.path.join(os.getcwd(),'id3.db3')
 #basedir = '/media/archerja/Extreme SSD/Music'
 basedir = '/home/archerja/Music/music'
-version = '0.8.0'
+version = '0.8.1'
 
 class ID3:
     def __init__(self,path):
@@ -106,8 +106,15 @@ class Script:
         MYinfo()
         cnx = self.db()
         cursor = cnx.cursor()
-        locsplit = query.split(basedir)[1]
-        print ('location path only: ', locsplit)
+        if query.startswith(basedir):
+            locsplit = query.split(basedir)[1]
+            print ('location path only: ', locsplit)
+        else:
+            print ('')
+            print ('  Update path: ' + query)
+            print ('  * Update path does not match music path! *')
+            print ('')
+            sys.exit(0)
         print ('--------------------')
         q = 'SELECT * from id3 WHERE location LIKE ' + '"' + locsplit + '%"' + ' ORDER BY location'
         cursor.execute(q)
@@ -196,6 +203,14 @@ class Script:
           for line in cursor:
               print (line["bitrate"], "*", line["artist"], "*", line["album"], "*", line["comment"], "*", line["track"], "*", line["title"])
           print ('')
+        elif "year" in query1:
+          q = 'SELECT distinct section as groups, artist||" * "||album as artalb, artist, album, year, bitrate from id3 WHERE year LIKE ' + '"%' + query2 + '%"' + ' GROUP BY artist||" * "||album ORDER BY location'
+          cursor.execute(q)
+          print ('year, group, bitrate, album, artist')
+          print ('---------------------------------------------------')
+          for line in cursor:
+              print (line["year"], "*", line["groups"], "*", line["bitrate"], "*", line["album"], "*", line["artist"] )
+          print ('')
         elif "genre" in query1:
           q = 'SELECT * from id3 WHERE genre LIKE ' + '"%' + query2 + '%"' + ' ORDER BY location'
           cursor.execute(q)
@@ -212,7 +227,7 @@ class Script:
           for line in cursor:
               print (line["groups"], "*", line["bitrate"], "*", line["year"], "*", line["artist"], "*", line["album"])
           print ('')
-        elif "list" in query1:
+        elif "group" in query1:
           q = 'SELECT distinct section as groups, rtrim(location, replace(location, "/", "")) as paths,artist, album, year, bitrate, location from id3 WHERE section LIKE ' + '"%' + query2 + '%"' + ' GROUP BY paths ORDER BY location'
           cursor.execute(q)
           print ('bitrate, directory path')
@@ -286,6 +301,31 @@ class Script:
               print (line["albums"], line["artists"], line["total"])
         print ('')
 
+    def list(self,query):
+        MYinfo()
+        cnx = self.db()
+        cursor = cnx.cursor()
+        if "artist" in query:
+          q = 'select distinct artist, length(artist) as len, section, count(*) as total, album, track from id3 group by artist order by artist'
+          cursor.execute(q)
+          print ('total, group, length, artist')
+          print ('---------------')
+          for line in cursor:
+              #print ("{:<45}".format(line["artist"]), "*", "{:<12}".format(line["section"]), "*", line["total"])
+              print ("{:<5}".format(line["total"]), "*", "{:<12}".format(line["section"]), "*", "{:<3}".format(line["len"]), "*", line["artist"])
+        elif "group" in query:
+          q = 'SELECT distinct section as groups, rtrim(location, replace(location, "/", "")) as paths,artist, album, year, bitrate, location from id3 GROUP BY paths ORDER BY location'
+          cursor.execute(q)
+          print ('bitrate, directory path')
+          print ('-------------------------------------')
+          for line in cursor:
+              print (line["bitrate"], "*", line["paths"])
+        else:
+          q = 'select count(distinct artist||album)||'"' albums '"' as albums ,count(distinct artist)||'"' artists '"' as artists ,count(*)||'"' total records'"' as total from id3'
+          cursor.execute(q)
+          for line in cursor:
+              print (line["albums"], line["artists"], line["total"])
+        print ('')
 
     def db(self):
         if getattr(self,"database", None) == None:
@@ -314,9 +354,10 @@ def help():
         print ('                    search      artist      "string" (using "like")')
         print ('                    search      album       "string" (using "like")')
         print ('                    search      title       "string" (using "like")')
+        print ('                    search      year        "string" (using "like")')
         print ('                    search      genre       "string" (using "like")')
         print ('                    search      discog      "string" (using "like", for artist)')
-        print ('                    search      list        "group"  (using "like")')
+        print ('                    search      group       "string" (using "like", for groups)')
         print ('                    search      below320    "group"  (using "like")')
         print ('                    search      bitrate     "string" (128,256,320,etc.)')
         print ('')
@@ -350,7 +391,7 @@ if __name__ == '__main__':
         print (sys.argv[0], ', version ', version)
         MYinfo()
         print ('')
-        print ('Usage: ', sys.argv[0], ' [ summary | search | update | m3u | db-build ] {argument} {query}')
+        print ('Usage: ', sys.argv[0], ' [ help | summary | search | update | m3u | db-build ] {argument} {query}')
         print ('')
     else:
         if sys.argv[1] in ("help","--help","-h"):
@@ -376,12 +417,18 @@ if __name__ == '__main__':
             elif sys.argv[1] == 'search':
                 if len(sys.argv) < 3:
                     print (' Question: Which search are you looking for? ')
-                    print ('   [ artist | album | title | genre | discog | list | bitrate | below320 ] ')
+                    print ('   [ artist | album | title | year | genre | discog | group | bitrate | below320 ] ')
                 else:
                     if len(sys.argv) < 4:
                         print (' Question: Which', sys.argv[2], 'are you looking for?')
                     else:
                         script.search(sys.argv[2],sys.argv[3])
+            elif sys.argv[1] == 'list':
+                if len(sys.argv) < 3:
+                    print (' Question: Which list are you looking for? ')
+                    print ('   [ artist | group | bitrate ] ')
+                else:
+                    script.list(sys.argv[2])
             elif sys.argv[1] == 'm3u':
                 if len(sys.argv) < 6:
                     arg5 = ''

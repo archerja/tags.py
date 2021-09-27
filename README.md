@@ -10,18 +10,35 @@ This script requires [mutagen](https://github.com/quodlibet/mutagen) to pull the
 
 Mutagen is needed to read local mp3 tag information that is inserted into the database.
 
-## Usage example
+## Usage examples
 
 ```
 $ ./tags.py 
 
-./tags.py , version  0.8.0
+./tags.py , version  0.8.1
 --------------------
-database path:  /home/archerja/projects/tags.py/id3.db3
-   music path:  /home/archerja/Music/music
+database path:  /media/archerja/Extreme SSD/bin/id3.db3
+   music path:  /media/archerja/Extreme SSD/Music
 --------------------
 
-Usage:  ./tags.py  [ summary | search | update | m3u | db-build ] {argument} {query}
+Usage:  ./tags.py  [ help | summary | search | update | m3u | db-build ] {argument} {query}
+
+```
+
+```
+$ ./tags.py summary
+ Question: Which summary are you looking for? 
+   [ all | artist | genre | group | year | bitrate ] 
+
+```
+
+```
+$ ./tags.py search
+ Question: Which search are you looking for? 
+   [ artist | album | title | year | genre | discog | group | bitrate | below320 ] 
+$ ./tags.py search artist
+ Question: Which artist are you looking for?
+$ ./tags.py search artist "Heart"
 
 ```
 
@@ -30,10 +47,10 @@ Usage:  ./tags.py  [ summary | search | update | m3u | db-build ] {argument} {qu
 ```
 $ ./tags.py --help
 
-./tags.py , version  0.8.0
+./tags.py , version  0.8.1
 --------------------
-database path:  /home/archerja/projects/tags.py/id3.db3
-   music path:  /home/archerja/Music/music
+database path:  /media/archerja/Extreme SSD/bin/id3.db3
+   music path:  /media/archerja/Extreme SSD/Music
 --------------------
 
 Usage:  ./tags.py  [ summary | search | update | m3u | db-build ] {argument} {query}
@@ -48,9 +65,10 @@ Usage:  ./tags.py  [ summary | search | update | m3u | db-build ] {argument} {qu
                     search      artist      "string" (using "like")
                     search      album       "string" (using "like")
                     search      title       "string" (using "like")
+                    search      year        "string" (using "like")
                     search      genre       "string" (using "like")
                     search      discog      "string" (using "like", for artist)
-                    search      list        "group"  (using "like")
+                    search      group       "string" (using "like", for groups)
                     search      below320    "group"  (using "like")
                     search      bitrate     "string" (128,256,320,etc.)
 
@@ -78,6 +96,9 @@ Usage:  ./tags.py  [ summary | search | update | m3u | db-build ] {argument} {qu
 
 ## Release History
 
+* 0.8.1
+    * Show error if db and music paths differ
+    * Added year search
 * 0.8.0
     * Rewrite and cleanup
     * Added m3u search
